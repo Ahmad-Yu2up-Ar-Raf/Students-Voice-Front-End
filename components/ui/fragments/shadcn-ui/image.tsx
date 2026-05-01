@@ -11,7 +11,7 @@ import { THEME } from '@/lib/theme';
 import { useColorScheme } from 'nativewind';
 
 // ─────────────────────────────────────────────────────────────
-// ✅ URL Sanitizer - fixes Platzi API returning ["url"] format
+// ✅ URL Sanitizer - handles local files AND remote URLs
 // ─────────────────────────────────────────────────────────────
 function sanitizeImageUrl(url: string | undefined | null): string | null {
   if (!url || typeof url !== 'string') return null;
@@ -34,11 +34,19 @@ function sanitizeImageUrl(url: string | undefined | null): string | null {
 
   // ✅ Reject SVG — expo-image cannot render SVGs reliably
   if (cleaned.toLowerCase().includes('.svg') || cleaned.toLowerCase().includes('svg+xml')) {
+    console.warn('⚠️ SVG files not supported:', cleaned);
     return null;
   }
 
-  // ✅ Must be a valid remote URL
-  if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+  // ✅ Allow: local files (file://), remote HTTP/HTTPS URLs, and content:// (Android)
+  const isValidUri =
+    cleaned.startsWith('http://') ||
+    cleaned.startsWith('https://') ||
+    cleaned.startsWith('file://') ||
+    cleaned.startsWith('content://'); // Android content:// URIs
+
+  if (!isValidUri) {
+    console.warn('⚠️ Invalid image URI format:', cleaned);
     return null;
   }
 
@@ -97,19 +105,30 @@ export const Image = forwardRef<ExpoImage, ImageProps>(
   ) => {
     // ─── Resolve & sanitize the URI ───────────────────────────
     const resolvedUri = React.useMemo<string | null>(() => {
-      if (!source) return null;
+      if (!source) {
+        console.debug('📸 Image source is empty');
+        return null;
+      }
 
       // ImageSource can be: { uri: string } | number | string
-      if (typeof source === 'number') return null; // local require()
+      if (typeof source === 'number') {
+        console.debug('📸 Using local require() - not supported for FilePicker');
+        return null;
+      }
 
       if (typeof source === 'string') {
-        return sanitizeImageUrl(source);
+        const sanitized = sanitizeImageUrl(source);
+        console.debug('📸 String source:', { raw: source, sanitized });
+        return sanitized;
       }
 
       if (typeof source === 'object' && 'uri' in source) {
-        return sanitizeImageUrl(source.uri as string);
+        const sanitized = sanitizeImageUrl(source.uri as string);
+        console.debug('📸 Object source:', { raw: source.uri, sanitized });
+        return sanitized;
       }
 
+      console.warn('📸 Unknown source type:', source);
       return null;
     }, [source]);
 
@@ -146,11 +165,13 @@ export const Image = forwardRef<ExpoImage, ImageProps>(
 
     // ─── Handlers ─────────────────────────────────────────────
     const handleLoadStart = useCallback(() => {
+      console.debug('⏳ Image loading started:', currentUri);
       setIsLoading(true);
       setHasError(false);
-    }, []);
+    }, [currentUri]);
 
     const handleLoad = useCallback(() => {
+      console.debug('✅ Image loaded successfully:', currentUri);
       setIsLoading(false);
       setHasError(false);
       // Cache successful URL
@@ -160,9 +181,17 @@ export const Image = forwardRef<ExpoImage, ImageProps>(
     const handleError = useCallback(
       (error: { error?: string }) => {
         const errMsg = error?.error ?? '';
+        console.error('🖼️ Image Load Error:', {
+          uri: currentUri,
+          error: errMsg,
+          retryCount,
+        });
 
         // ✅ 429 Too Many Requests — retry with exponential backoff
         if (errMsg.includes('429') && retryCount < MAX_RETRIES) {
+          console.warn(
+            `⏳ Rate limited (429) - Retrying in ${RETRY_DELAY_MS * Math.pow(2, retryCount)}ms...`
+          );
           const delay = RETRY_DELAY_MS * Math.pow(2, retryCount); // 1.5s, 3s
           retryTimeoutRef.current = setTimeout(() => {
             setRetryCount((c) => c + 1);
@@ -175,6 +204,7 @@ export const Image = forwardRef<ExpoImage, ImageProps>(
 
         // ✅ 400 Bad Request — URL is bad, use fallback
         if (errMsg.includes('400') || errMsg.includes('status code: 400')) {
+          console.warn('❌ Bad Request (400) - Using fallback image');
           setCurrentUri(FALLBACK_URI);
           setIsLoading(false);
           return;
@@ -182,16 +212,18 @@ export const Image = forwardRef<ExpoImage, ImageProps>(
 
         // ✅ SVG / cannot load — use fallback silently
         if (errMsg.includes('SVG') || errMsg.includes('setDataSource')) {
+          console.warn('❌ Unsupported format - Using fallback image');
           setCurrentUri(FALLBACK_URI);
           setIsLoading(false);
           return;
         }
 
-        // All other errors — show fallback
+        // All other errors — show fallback & log
+        console.error('❌ Unknown error - Showing error state');
         setIsLoading(false);
         setHasError(true);
       },
-      [retryCount, resolvedUri]
+      [retryCount, resolvedUri, currentUri]
     );
 
     // ─── Variant classes ──────────────────────────────────────

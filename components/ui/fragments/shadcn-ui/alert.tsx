@@ -1,7 +1,7 @@
 import { Icon } from '@/components/ui/fragments/shadcn-ui/icon';
 import { Text, TextClassContext } from '@/components/ui/fragments/shadcn-ui/text';
 import { cn } from '@/lib/utils';
-import type { LucideIcon } from 'lucide-react-native';
+import { Loader2, type LucideIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { View, type ViewProps } from 'react-native';
 
@@ -28,14 +28,19 @@ function Alert({
       <View
         role="alert"
         className={cn(
-          'relative w-full rounded-2xl border border-border bg-card px-4 pb-2 pt-3.5',
+          'relative w-full rounded-xl border border-border bg-card px-4 pb-2 pt-3.5',
           className
         )}
         {...props}>
         <View className="absolute left-3.5 top-3">
           <Icon
             as={icon}
-            className={cn('size-4', variant === 'destructive' && 'text-destructive', iconClassName)}
+            className={cn(
+              'size-4',
+              Icon == Loader2 && 'animate-spin',
+              variant === 'destructive' && 'text-destructive',
+              iconClassName
+            )}
           />
         </View>
         {children}

@@ -73,7 +73,7 @@ const AuthLayout = ({
   });
 
   const formTypeLabel = formType == 'register' ? 'Login' : 'Register';
-  const formTypeLink = formType == 'register' ? '/(auth)/sign-in' : '/(auth)/sign-up';
+  const formTypeLink = formType == 'register' ? '/' : '/';
 
   return (
     <SafeAreaView

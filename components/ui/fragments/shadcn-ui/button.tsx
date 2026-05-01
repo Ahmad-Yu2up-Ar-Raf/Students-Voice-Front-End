@@ -1,4 +1,4 @@
-import { TextClassContext } from '@/components/ui/fragments/shadcn-ui/text';
+import { TextClassContext } from './text';
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics';
 
 const buttonVariants = cva(
   cn(
-    'group shrink-0 flex-row items-center justify-center gap-2 rounded-2xl shadow-none',
+    'group shrink-0 flex-row items-center justify-center gap-2 rounded-xl shadow-none',
     Platform.select({
       web: "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap outline-none transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
     })
@@ -15,7 +15,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: cn(
-          'bg-primary shadow-sm shadow-black/5',
+          'bg-primary shadow-sm shadow-black/5 active:bg-primary/90',
           Platform.select({ web: 'hover:bg-primary/90' })
         ),
         destructive: cn(
@@ -25,7 +25,7 @@ const buttonVariants = cva(
           })
         ),
         outline: cn(
-          'border border-border bg-background shadow-sm shadow-black/5 active:bg-accent dark:border-muted dark:bg-input/30 dark:active:bg-input/50',
+          'border border-border bg-background shadow-sm shadow-black/5 active:bg-accent dark:border-input dark:bg-input/30 dark:active:bg-input/50',
           Platform.select({
             web: 'hover:bg-accent dark:hover:bg-input/50',
           })
@@ -42,11 +42,8 @@ const buttonVariants = cva(
       },
       size: {
         default: cn('h-10 px-4 py-2 sm:h-9', Platform.select({ web: 'has-[>svg]:px-3' })),
-        sm: cn(
-          'h-9 gap-1.5 rounded-2xl px-3 sm:h-8',
-          Platform.select({ web: 'has-[>svg]:px-2.5' })
-        ),
-        lg: cn('h-11 rounded-2xl px-6 sm:h-10', Platform.select({ web: 'has-[>svg]:px-4' })),
+        sm: cn('h-9 gap-1.5 rounded-xl px-3 sm:h-8', Platform.select({ web: 'has-[>svg]:px-2.5' })),
+        lg: cn('h-11 rounded-xl px-6 sm:h-10', Platform.select({ web: 'has-[>svg]:px-4' })),
         icon: 'h-10 w-10 sm:h-9 sm:w-9',
       },
     },
@@ -94,30 +91,24 @@ const buttonTextVariants = cva(
 
 type ButtonProps = React.ComponentProps<typeof Pressable> &
   React.RefAttributes<typeof Pressable> &
-  VariantProps<typeof buttonVariants>;
-
-function Button({ className, variant, size, onPress, ...props }: ButtonProps) {
-  // ✅ onPress di-destructure terpisah agar tidak ditimpa oleh spread {...props}
-  // Root cause bug sebelumnya: {...props} di-spread SETELAH custom onPress handler,
-  // sehingga onPress dari props menimpa handler haptics kita.
-  const handlePress = (event: Parameters<NonNullable<typeof onPress>>[0]) => {
-    // Haptics selalu jalan terlepas onPress di-pass atau tidak
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onPress?.(event);
+  VariantProps<typeof buttonVariants> & {
+    haptic?: boolean;
   };
 
+function Button({ className, haptic, variant, size, onPress, ...props }: ButtonProps) {
+  const handlePress = (event: Parameters<NonNullable<typeof onPress>>[0]) => {
+    if (haptic) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onPress?.(event);
+  };
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Pressable
-        className={cn(
-          props.disabled && 'opacity-50',
-          buttonVariants({ variant, size }),
-          className,
-          'overflow-hidden'
-        )}
+        className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
         role="button"
         onPress={handlePress}
-        {...props} // ✅ Aman karena onPress sudah di-destructure, tidak ada di dalam props
+        {...props}
       />
     </TextClassContext.Provider>
   );

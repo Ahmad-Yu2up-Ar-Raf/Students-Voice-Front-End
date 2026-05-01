@@ -7,7 +7,7 @@ import { Text } from '@/components/ui/fragments/shadcn-ui/text';
 import { Icon } from '@/components/ui/fragments/shadcn-ui/icon';
 import { ChevronRight, LogOut } from 'lucide-react-native';
 import { Card, CardContent } from '@/components/ui/fragments/shadcn-ui/card';
-import { MenuDetail } from '@/type';
+import { MenuDetail } from '@/types';
 import { Separator } from '../../shadcn-ui/separator';
 
 type componentProps = {
@@ -15,7 +15,7 @@ type componentProps = {
   className?: string;
   buttonClassName?: string;
   hideLastSeparator?: boolean;
-  onSignOut(): Promise<void>;
+  onSignOut(): void;
 };
 
 export default function MenuCard({
@@ -43,12 +43,12 @@ export default function MenuCard({
                 variant="outline"
                 onPress={detail.onPress}
                 className={cn(
-                  'h-fit w-full justify-between rounded-2xl border-0 bg-background px-0 py-4 active:bg-accent dark:bg-background dark:active:bg-input/50',
+                  'h-fit w-full justify-between rounded-xl border-0 bg-background px-0 py-4 active:bg-accent dark:bg-background dark:active:bg-input/50',
                   buttonClassName
                 )}>
                 <View className="flex-row items-center gap-5">
                   {detail.icon && (
-                    <View className="rounded-2xl bg-primary/10 p-2">
+                    <View className="rounded-xl bg-primary/10 p-2">
                       <Icon as={detail.icon} size={21} className="rounded-xl text-primary" />
                     </View>
                   )}
@@ -77,11 +77,11 @@ export default function MenuCard({
           variant="outline"
           onPress={onSignOut}
           className={cn(
-            'h-fit w-full justify-between rounded-2xl border-0 bg-background px-0 py-4 active:bg-accent dark:bg-background dark:active:bg-input/50',
+            'h-fit w-full justify-between rounded-xl border-0 bg-background px-0 py-4 active:bg-accent dark:bg-background dark:active:bg-input/50',
             buttonClassName
           )}>
           <View className="flex-row items-center gap-5">
-            <View className="rounded-2xl bg-destructive/10 p-2">
+            <View className="rounded-xl bg-destructive/10 p-2">
               <Icon as={LogOut} size={21} className="rounded-xl text-destructive" />
             </View>
 

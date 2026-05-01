@@ -139,7 +139,7 @@ export const GroupedInputItem = forwardRef<TextInputB, GroupedInputItemProps>(
         <View className="flex flex-col gap-1.5">
           <View
             className={cn(
-              'relative flex-row items-center rounded-2xl border',
+              'relative flex-row items-center rounded-xl border',
               error ? 'border-destructive' : isFocused ? 'border-blue-500' : 'border-border'
             )}>
             <View className="relative flex-1">
