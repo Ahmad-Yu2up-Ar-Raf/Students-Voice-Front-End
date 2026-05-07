@@ -1,28 +1,52 @@
 import { Post, PostsResponse } from '@/types/post-types';
 import { DataPost } from '../../types/post-types';
 
-const BASE_API = process.env.EXPO_PUBLIC_API_URL ?? `http://192.168.100.11:8000/api`;
+const BASE_API = process.env.EXPO_PUBLIC_API_URL ?? `http://171.16.2.3:8000/api`;
 
 export async function FetchAllPosts(): Promise<DataPost[]> {
   try {
-    const res = await fetch(BASE_API);
+    const res = await fetch(`${BASE_API}/posts`);
     if (!res.ok) {
-      throw new Error(`Failed to fetch post data: HTTP ${res.status}`);
+      throw new Error(`Error while fetching: HTTP ${res.status}`);
     }
+
     const json = (await res.json()) as PostsResponse;
+
     if (!json) {
-      throw new Error(`Unexpected JSON error response`);
+      throw new Error(`Error unexpected json response`);
     }
-    const posts = json.data.data;
-    const mapped = posts.map((post) => ({
+
+    console.log('API Response:', JSON.stringify(json, null, 2));
+
+    let posts = json.data?.data;
+
+    if (!posts) {
+      if (Array.isArray(json.data)) {
+        posts = json.data;
+      } else if (Array.isArray(json)) {
+        posts = json;
+      } else {
+        console.warn('Unexpected API response structure:', json);
+        throw new Error('Invalid API response structure');
+      }
+    }
+
+    // Pastikan posts adalah array
+    if (!Array.isArray(posts)) {
+      console.error('Posts is not an array:', posts);
+      throw new Error('Posts data is not an array');
+    }
+
+    const mapping = posts.map((post) => ({
       ...post,
-      created_at: typeof post.created_at === 'string' ? parseInt(post.created_at) : post.created_at,
-      updated_at: typeof post.updated_at === 'string' ? parseInt(post.updated_at) : post.updated_at,
+
+      created_at: typeof post.created_at == 'string' ? parseInt(post.created_at) : post.created_at,
+      updated_at: typeof post.updated_at == 'string' ? parseInt(post.updated_at) : post.updated_at,
     }));
 
-    return mapped as DataPost[];
+    return mapping as DataPost[];
   } catch (error) {
-    console.log(`Error while fetching data: ${error}`);
+    console.error('Error while fetching posts:', error);
     return [];
   }
 }

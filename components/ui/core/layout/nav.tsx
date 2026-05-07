@@ -76,10 +76,10 @@ function HeaderComponent({
   return (
     <>
       <View
-        style={{ paddingTop: insets.top + 4, backgroundColor: bgColor }}
-        className={cn('relative flex-row items-center justify-between px-4 pb-3')}>
+        style={{ paddingTop: insets.top + 13, backgroundColor: bgColor }}
+        className={cn('relative z-40 flex-row items-center justify-between px-5 pb-3')}>
         {/* Left Section */}
-        <View className="z-10 w-10 items-start">
+        <View className="z-50 w-10 items-start" pointerEvents="box-none">
           {LeftIcon ? (
             <Button
               variant={'ghost'}
@@ -103,7 +103,7 @@ function HeaderComponent({
 
         <View
           className="absolute inset-0 top-1/2 -translate-y-4 transform items-center justify-center px-5 pb-0"
-          style={{ paddingTop: insets.top + 3 }}>
+          style={{ paddingTop: insets.top + 5 }}>
           {title || scrollAnimatedPosition ? (
             <Animated.View
               style={animatedTitleStyle}
@@ -133,7 +133,7 @@ function HeaderComponent({
         </View>
 
         {/* Right Section */}
-        <View className="z-10 items-end">
+        <View className="z-50 items-end" pointerEvents="box-none">
           {RigthComponent ? (
             RigthComponent
           ) : RightIcon ? (

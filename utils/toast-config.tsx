@@ -5,8 +5,9 @@ import {
   AlertCircle,
   AlertTriangle,
   Info,
-  Loader2,
+  Loader,
   LucideIcon,
+  Loader2,
 } from 'lucide-react-native';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/fragments/shadcn-ui/alert';
 import { THEME } from '@/lib/theme';

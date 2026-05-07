@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Wrapper } from '../layout/wrapper';
-
+import * as Haptics from 'expo-haptics';
 import { Text } from '../../fragments/shadcn-ui/text';
-import { View, Platform } from 'react-native';
+import { View, Platform, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from '@/hooks/useToastSimplified';
 import { useScrollTracker } from '@/hooks/useScrollTracker';
@@ -41,6 +41,7 @@ import CategoryMenu from '../../fragments/custom-ui/menu/category-menu';
 import { Input } from '../../fragments/shadcn-ui/input';
 import { cn } from '@/lib/utils';
 import { SavePost } from '@/lib/server/posts-server';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface PostBlockProps {
   mode?: 'create' | 'edit';
@@ -63,7 +64,7 @@ const RESET_POST_DATA: Post = {
 
 export default function PostBlock({ mode = 'create', postData }: PostBlockProps) {
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
-
+  const queryClient = useQueryClient();
   const [PostData, setPostData] = useState<Post>({
     id: postData?.id, // FIX: id diperlukan untuk SavePost edit mode
     media: postData?.media,
@@ -115,6 +116,9 @@ export default function PostBlock({ mode = 'create', postData }: PostBlockProps)
       return;
     }
 
+    // Dismiss keyboard sebelum upload
+    Keyboard.dismiss();
+
     const loadingToastId = toast.loading({
       title: 'Publishing...',
       message: `${mode === 'edit' ? 'Updating' : 'Creating'} your post`,
@@ -134,6 +138,7 @@ export default function PostBlock({ mode = 'create', postData }: PostBlockProps)
 
         filePickerRef.current?.clearFiles();
         setPostData(RESET_POST_DATA);
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
         router.push('/');
       } else {
         throw new Error(result.message || 'Failed to post');
@@ -173,6 +178,7 @@ export default function PostBlock({ mode = 'create', postData }: PostBlockProps)
   const handleConfirmDiscard = useCallback(() => {
     filePickerRef.current?.clearFiles();
     setPostData(RESET_POST_DATA);
+    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push('/');
   }, []);
 
@@ -305,7 +311,7 @@ export default function PostBlock({ mode = 'create', postData }: PostBlockProps)
           <AlertDialogHeader>
             <AlertDialogTitle>Discard changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. Do you want to discard?
+              You have unsaved. Do you want to discard?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,4 +1,3 @@
-// app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { THEME } from '@/lib/theme';
 import { useColorScheme } from 'nativewind';
@@ -28,16 +27,14 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: tintColor,
-
           tabBarInactiveTintColor: inactiveTintColor,
           tabBarStyle: {
             backgroundColor,
-
             height: 60 + insets.bottom,
             paddingTop: 10,
             display: 'flex',
             alignItems: 'center',
-            paddingHorizontal: 0,
+            paddingHorizontal: 8,
             borderTopWidth: 0.5,
             borderTopColor: THEME[currentTheme].background,
             shadowColor: mutedForeground,
@@ -125,8 +122,6 @@ export default function TabsLayout() {
             ),
           }}
         />
-
-        {/* Tab lainnya... */}
       </Tabs>
     </>
   );

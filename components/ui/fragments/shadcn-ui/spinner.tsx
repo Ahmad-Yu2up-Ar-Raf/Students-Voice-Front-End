@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Icon } from './icon';
-import { Loader2Icon, LucideIcon, LucideProps } from 'lucide-react-native';
+import { Loader, LucideIcon, LucideProps } from 'lucide-react-native';
 
 type IconProps = LucideProps & {
   as?: LucideIcon;
@@ -21,7 +21,7 @@ function Spinner({ className, as, size = 'md', ...props }: IconProps) {
 
   return (
     <Icon
-      as={as ?? Loader2Icon}
+      as={as ?? Loader}
       size={pixelSize}
       aria-label="Loading"
       className={cn('animate-spin', className)}

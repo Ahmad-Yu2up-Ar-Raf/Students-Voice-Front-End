@@ -13,19 +13,18 @@ import { useColorScheme } from 'nativewind';
 import { Icon } from './icon';
 
 export type FileType = 'image' | 'document' | 'all';
-
-/**
- * Media hanya menyimpan URI lokal + metadata file.
- * TIDAK ada base64Data di sini — base64 hanya dibaca saat upload (di posts-server.ts).
- * Ini mencegah JS heap OOM yang menyebabkan force close.
- */
 export interface Media {
-  uri: string; // local file:// URI (new file) atau https:// URI (existing from server)
-  file: {
-    name: string;
-    size: number;
-    type: string;
-  };
+  file: File;
+  file_path: string;
+  preview: string;
+  id: string;
+  uri: string;
+}
+
+export interface File {
+  name: string;
+  size: number;
+  type: string;
 }
 
 // Internal only — untuk keperluan preview di UI
@@ -147,6 +146,9 @@ export const FilePicker = forwardRef<FilePickerMethods, FilePickerProps>(
     const buildMedia = useCallback(
       (file: InternalFile): Media => ({
         uri: file.uri,
+        file_path: file.uri,
+        preview: file.uri,
+        id: file.uri,
         file: {
           name: file.name,
           size: file.size,
